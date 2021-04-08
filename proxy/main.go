@@ -1,30 +1,46 @@
 package main
 
-import "time"
-import "net"
-import "net/http"
+import (
+	"fmt"
+	"log"
+	"net"
+	"net/http"
+	"net/url"
+	"time"
+)
+
+const scalerPort = 8082
+const originPort = 8081
 
 func main() {
+	scalerURL, err := url.Parse(fmt.Sprintf("http://localhost:%d", scalerPort))
+	if err != nil {
+		log.Fatalf("Invalid scaler URL: %s", err)
+	}
+	originURL, err := url.Parse(fmt.Sprintf("http://localhost:%d", originPort))
+	if err != nil {
+		log.Fatalf("Invalid forwarding URL: %s", err)
+	}
 	port := 8080
 	proxyMux := http.NewServeMux()
-	dialer := 	&net.Dialer{
+	coreDialer := &net.Dialer{
 		Timeout:   500 * time.Millisecond,
 		KeepAlive: 1 * time.Second,
 	}
 
-	dialContextFunc := kedanet.DialContextWithRetry(dialer, timeouts.DefaultBackoff())
+	dialContextFunc := newDialContextFuncWithRetry(coreDialer, 100, 1*time.Second)
+	waitFunc := newScalerForwardWaitFunc(scalerURL, 100, 1*time.Second)
 	proxyHdl := newForwardingHandler(
-		svcURL,
+		originURL,
 		dialContextFunc,
 		waitFunc,
-		timeouts.DeploymentReplicas,
-		timeouts.ResponseHeader,
+		10*time.Second,
+		10*time.Second,
 	)
-	proxyMux.Handle("/*", countMiddleware(q, proxyHdl))
+	proxyMux.Handle("/", proxyHdl)
 
 	addr := fmt.Sprintf("0.0.0.0:%d", port)
 	log.Printf("proxy server starting on %s", addr)
-	nethttp.ListenAndServe(addr, proxyMux)
-}
-
+	log.Printf("Using scalerURL = %s, originURL = %s", scalerURL, originURL)
+	http.ListenAndServe(addr, proxyMux)
 }
