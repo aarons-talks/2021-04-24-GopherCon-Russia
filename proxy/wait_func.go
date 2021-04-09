@@ -12,6 +12,13 @@ import (
 	"gcruaaron.dev/pkg/proxy"
 )
 
+// newScalerForwardWaitFunc creates a ForwardWaitFunc that watches scaler metrics from scalerURL
+// and returns after it reports either >0 replicas, the given error tolerance errTolerance is reached
+// (when trying to make RPCs to the scaler), the errWait timeout is reached, or the given context
+// is cancelled (or times out).
+//
+// In the first case (>0 replicas), the returned ForwardWaitFunc will return nil and in all other cases,
+// it will return a non-nil error.
 func newScalerForwardWaitFunc(
 	scalerURL *url.URL,
 	errTolerance uint,

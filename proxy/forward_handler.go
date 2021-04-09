@@ -13,6 +13,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// newForwardingHandler creates a new http handler that forwards requests to fwdSvcURL.
 func newForwardingHandler(
 	fwdSvcURL *url.URL,
 	dialCtxFunc proxy.DialContextFunc,
@@ -27,11 +28,10 @@ func newForwardingHandler(
 		grp.Go(func() error {
 			return waitFunc(ctx)
 		})
-		waitErr := grp.Wait()
-		if waitErr != nil {
-			log.Printf("Error, not forwarding request")
+		if err := grp.Wait(); err != nil {
+			log.Printf("Error, not forwarding request: %s", err)
 			w.WriteHeader(502)
-			w.Write([]byte(fmt.Sprintf("error on backend (%s)", waitErr)))
+			w.Write([]byte(fmt.Sprintf("error on backend (%s)", err)))
 			return
 		}
 		log.Printf("forwarding request to %#v", *fwdSvcURL)
@@ -39,6 +39,7 @@ func newForwardingHandler(
 	})
 }
 
+// forwardRequest sets up a proxy and forwards the request to fwdSvcURL
 func forwardRequest(
 	w http.ResponseWriter,
 	r *http.Request,
