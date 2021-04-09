@@ -8,23 +8,15 @@ import (
 	"net/url"
 	"strconv"
 	"time"
+
+	"gcruaaron.dev/pkg/proxy"
 )
 
-type forwardWaitFunc func(ctx context.Context) error
-
-func wait(ctx context.Context, dur time.Duration) error {
-	timer := time.NewTimer(dur)
-	defer timer.Stop()
-	select {
-	case <-timer.C:
-		return nil
-	case <-ctx.Done():
-		log.Printf("scaler context done: %s", ctx.Err())
-		return ctx.Err()
-	}
-}
-
-func newScalerForwardWaitFunc(scalerURL *url.URL, errTolerance uint, errWait time.Duration) forwardWaitFunc {
+func newScalerForwardWaitFunc(
+	scalerURL *url.URL,
+	errTolerance uint,
+	errWait time.Duration,
+) proxy.ForwardWaitFunc {
 	return func(ctx context.Context) error {
 		numErrs := uint(0)
 		toleranceMet := func(err error) bool {
@@ -43,7 +35,7 @@ func newScalerForwardWaitFunc(scalerURL *url.URL, errTolerance uint, errWait tim
 			if toleranceMet(err) {
 				return err
 			} else if err != nil {
-				if err := wait(ctx, errWait); err != nil {
+				if err := proxy.Wait(ctx, errWait); err != nil {
 					return err
 				}
 				continue
@@ -53,7 +45,7 @@ func newScalerForwardWaitFunc(scalerURL *url.URL, errTolerance uint, errWait tim
 			if toleranceMet(err) {
 				return err
 			} else if err != nil {
-				if err := wait(ctx, errWait); err != nil {
+				if err := proxy.Wait(ctx, errWait); err != nil {
 					return err
 				}
 				continue
@@ -62,7 +54,7 @@ func newScalerForwardWaitFunc(scalerURL *url.URL, errTolerance uint, errWait tim
 			if toleranceMet(err) {
 				return err
 			} else if err != nil {
-				if err := wait(ctx, errWait); err != nil {
+				if err := proxy.Wait(ctx, errWait); err != nil {
 					return err
 				}
 				continue
@@ -72,11 +64,10 @@ func newScalerForwardWaitFunc(scalerURL *url.URL, errTolerance uint, errWait tim
 				return nil
 			} else {
 				log.Printf("Scaler reported 0 replicas, waiting")
-				if err := wait(ctx, errWait); err != nil {
+				if err := proxy.Wait(ctx, errWait); err != nil {
 					return err
 				}
 			}
-			// return nil
 		}
 	}
 }

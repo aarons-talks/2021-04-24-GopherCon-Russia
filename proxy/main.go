@@ -8,15 +8,15 @@ import (
 	"net/url"
 	"time"
 
-	pkgnet "gcruaaron.dev/pkg/net"
+	"gcruaaron.dev/pkg/proxy"
 )
 
 func main() {
-	scalerURL, err := url.Parse(fmt.Sprintf("http://localhost:%d", pkgnet.ScalerPort))
+	scalerURL, err := url.Parse(fmt.Sprintf("http://localhost:%d", proxy.ScalerPort))
 	if err != nil {
 		log.Fatalf("Invalid scaler URL: %s", err)
 	}
-	originURL, err := url.Parse(fmt.Sprintf("http://localhost:%d", pkgnet.OriginPort))
+	originURL, err := url.Parse(fmt.Sprintf("http://localhost:%d", proxy.OriginPort))
 	if err != nil {
 		log.Fatalf("Invalid forwarding URL: %s", err)
 	}
@@ -37,7 +37,7 @@ func main() {
 	)
 	proxyMux.Handle("/", proxyHandler)
 
-	addr := fmt.Sprintf("0.0.0.0:%d", pkgnet.ProxyPort)
+	addr := fmt.Sprintf("0.0.0.0:%d", proxy.ProxyPort)
 	log.Printf("proxy server starting on %s", addr)
 	log.Printf("Using scalerURL = %s, originURL = %s", scalerURL, originURL)
 	http.ListenAndServe(addr, proxyMux)

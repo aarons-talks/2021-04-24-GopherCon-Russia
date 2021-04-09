@@ -4,19 +4,19 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"time"
 
+	"gcruaaron.dev/pkg/proxy"
 	"golang.org/x/sync/errgroup"
 )
 
 func newForwardingHandler(
 	fwdSvcURL *url.URL,
-	dialCtxFunc DialContextFunc,
-	waitFunc forwardWaitFunc,
+	dialCtxFunc proxy.DialContextFunc,
+	waitFunc proxy.ForwardWaitFunc,
 	waitTimeout time.Duration,
 	respTimeout time.Duration,
 ) http.Handler {
@@ -39,12 +39,10 @@ func newForwardingHandler(
 	})
 }
 
-type DialContextFunc func(ctx context.Context, network, addr string) (net.Conn, error)
-
 func forwardRequest(
 	w http.ResponseWriter,
 	r *http.Request,
-	dialCtxFunc DialContextFunc,
+	dialCtxFunc proxy.DialContextFunc,
 	respHeaderTimeout time.Duration,
 	fwdSvcURL *url.URL,
 ) {

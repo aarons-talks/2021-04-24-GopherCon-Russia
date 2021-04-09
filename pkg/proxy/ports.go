@@ -1,4 +1,4 @@
-package net
+package proxy
 
 const (
 	ScalerPort = 8082
