@@ -28,14 +28,14 @@ func main() {
 
 	dialContextFunc := newDialContextFuncWithRetry(coreDialer, 100, 1*time.Second)
 	waitFunc := newScalerForwardWaitFunc(scalerURL, 100, 1*time.Second)
-	proxyHdl := newForwardingHandler(
+	proxyHandler := newForwardingHandler(
 		originURL,
 		dialContextFunc,
 		waitFunc,
 		10*time.Second,
 		10*time.Second,
 	)
-	proxyMux.Handle("/", proxyHdl)
+	proxyMux.Handle("/", proxyHandler)
 
 	addr := fmt.Sprintf("0.0.0.0:%d", pkgnet.ProxyPort)
 	log.Printf("proxy server starting on %s", addr)
