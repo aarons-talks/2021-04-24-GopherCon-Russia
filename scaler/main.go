@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	pkgnet "gcruaaron.dev/pkg/net"
+	"gcruaaron.dev/pkg/proxy"
 )
 
 const scaledTo = "1"
@@ -16,7 +16,7 @@ func main() {
 		log.Printf("scaler reporting %s replicas", scaledTo)
 		w.Write([]byte(scaledTo))
 	})
-	addr := fmt.Sprintf("0.0.0.0:%d", pkgnet.ScalerPort)
+	addr := fmt.Sprintf("0.0.0.0:%d", proxy.ScalerPort)
 	log.Printf("Serving the Scaler on %s with %s replicas", addr, scaledTo)
 	log.Fatal(http.ListenAndServe(addr, mux))
 }

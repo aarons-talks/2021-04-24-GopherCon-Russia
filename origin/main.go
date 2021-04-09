@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	pkgnet "gcruaaron.dev/pkg/net"
+	"gcruaaron.dev/pkg/proxy"
 )
 
 func main() {
@@ -14,7 +14,7 @@ func main() {
 		log.Printf("origin got request for %s", r.URL.Path)
 		w.Write([]byte("hello from the origin!"))
 	})
-	addr := fmt.Sprintf("0.0.0.0:%d", pkgnet.OriginPort)
+	addr := fmt.Sprintf("0.0.0.0:%d", proxy.OriginPort)
 	log.Printf("Serving the origin on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, mux))
 }
