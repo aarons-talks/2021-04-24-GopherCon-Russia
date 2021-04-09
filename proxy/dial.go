@@ -6,9 +6,15 @@ import (
 	"log"
 	"net"
 	"time"
+
+	"gcruaaron.dev/pkg/proxy"
 )
 
-func newDialContextFuncWithRetry(coreDialer *net.Dialer, numRetries uint, retryPause time.Duration) DialContextFunc {
+func newDialContextFuncWithRetry(
+	coreDialer *net.Dialer,
+	numRetries uint,
+	retryPause time.Duration,
+) proxy.DialContextFunc {
 	return func(ctx context.Context, network, addr string) (net.Conn, error) {
 		var lastError error
 		for i := uint(0); i < numRetries; i++ {
