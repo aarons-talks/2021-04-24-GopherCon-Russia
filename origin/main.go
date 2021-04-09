@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+
+	pkgnet "gcruaaron.dev/pkg/net"
 )
 
 func main() {
@@ -11,6 +14,7 @@ func main() {
 		log.Printf("origin got request for %s", r.URL.Path)
 		w.Write([]byte("hello from the origin!"))
 	})
-	log.Printf("Serving the origin on port 8081")
-	log.Fatal(http.ListenAndServe("0.0.0.0:8081", mux))
+	addr := fmt.Sprintf("0.0.0.0:%d", pkgnet.OriginPort)
+	log.Printf("Serving the origin on %s", addr)
+	log.Fatal(http.ListenAndServe(addr, mux))
 }

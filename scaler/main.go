@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+
+	pkgnet "gcruaaron.dev/pkg/net"
 )
 
 const scaledTo = "1"
@@ -13,6 +16,7 @@ func main() {
 		log.Printf("scaler reporting %s replicas", scaledTo)
 		w.Write([]byte(scaledTo))
 	})
-	log.Printf("Serving the Scaler on port 8082 with %s replicas", scaledTo)
-	log.Fatal(http.ListenAndServe("0.0.0.0:8082", mux))
+	addr := fmt.Sprintf("0.0.0.0:%d", pkgnet.ScalerPort)
+	log.Printf("Serving the Scaler on %s with %s replicas", addr, scaledTo)
+	log.Fatal(http.ListenAndServe(addr, mux))
 }
